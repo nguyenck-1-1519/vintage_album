@@ -1,0 +1,14 @@
+curl -X POST -H "Content-Type: application/json" -d '{
+    "title": "New Book",
+    "author": "New Author",
+    "price": 25.99,
+    "stock": 10
+}' http://localhost:8080/books
+
+
+curl -X PUT -H "Content-Type: application/json" -d '{
+    "title": "Adama Waller",
+    "author": "JJ",
+    "price": 5.99,
+    "stock": 1
+}' http://localhost:8080/books/1

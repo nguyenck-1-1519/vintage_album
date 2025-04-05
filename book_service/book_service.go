@@ -157,26 +157,22 @@ func UpdateBookInfoWithID(c *gin.Context) {
 		return
 	}
 
-	book, _, err := getBookWithID(id)
-	if err != nil {
-		throwBadRequestWithError(&err, c, messages.ResultNotFound)
-		return
-	}
-
 	var adjustingBook Book
 	if err := c.BindJSON(&adjustingBook); err != nil || !checkBindingConditionForNewBook(adjustingBook) {
 		throwBadRequestWithError(&err, c, "")
 		return
 	}
 
-	book.Author = adjustingBook.Author
-	book.Price = adjustingBook.Price
-	book.Stock = adjustingBook.Stock
-	book.Title = adjustingBook.Title
+	err = UpdateBookInfoToDB(adjustingBook, id)
+
+	if err != nil {
+		throwBadRequestWithError(&err, c, "")
+		return
+	}
+
 	c.IndentedJSON(http.StatusOK, response.BaseResponse{
 		Status:  response.StatusOK,
 		Message: messages.OK,
-		Data:    book,
 	})
 }
 

@@ -15,6 +15,7 @@ var (
 	QueryGetTotalItemCount      = "SELECT COUNT(*) FROM books"
 	QueryGetBookInfo            = "SELECT id, title, author, price, stock FROM books WHERE id = ?"
 	QueryInsertBook             = "INSERT INTO books (title, author, price, stock) VALUES (?, ?, ?, ?)"
+	QueryUpdateBookInfo         = "UPDATE books SET title = ?, author = ?, price = ?, stock = ? WHERE id = ?"
 )
 
 func GetBooksFromDB(page int, limit int) ([]Book, response.PaginationData, error) {
@@ -92,9 +93,9 @@ func GetBookInfoFromDB(id int) (Book, error) {
 
 	// Query get Book Info
 	var book Book
-	err = db.QueryRow(QueryGetBookInfo, id).Scan(&book)
+	err = db.QueryRow(QueryGetBookInfo, id).Scan(&book.ID, &book.Title, &book.Author, &book.Price, &book.Stock)
 	if err != nil {
-		log.Fatal("query items from db failed")
+		log.Fatal("query items from db failed ", err)
 		return Book{}, errors.New("query items from db failed")
 	}
 
@@ -125,4 +126,27 @@ func InsertBookToDB(book Book) error {
 		return nil
 	}
 	return errors.New("unknown error")
+}
+
+func UpdateBookInfoToDB(book Book, id int) error {
+	// open connection to db
+	db, err := sql.Open("mysql", "root:Aa@123456@tcp(localhost:3306)/book_management")
+	if err != nil {
+		return errors.New("open db failed")
+	}
+	defer db.Close()
+
+	// Check connection before query
+	if err := db.Ping(); err != nil {
+		return errors.New("keep connection to db failed")
+	}
+
+	//Query update book
+	result, err := db.Exec(QueryUpdateBookInfo, book.Title, book.Author, book.Price, book.Stock, id)
+
+	if err != nil || result == nil {
+		log.Fatal("query items from db failed ", err)
+		return errors.New("query items from db failed")
+	}
+	return nil
 }
