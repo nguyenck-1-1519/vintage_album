@@ -10,28 +10,27 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const (
+	mySqlDbType     = "mysql"
+	openSqlDbScript = "root:Aa@123456@tcp(localhost:3306)/book_management"
+)
+
 var (
 	QueryGetBooksWithPagination = "SELECT id, title, author, price, stock FROM books LIMIT ? OFFSET ?"
 	QueryGetTotalItemCount      = "SELECT COUNT(*) FROM books"
 	QueryGetBookInfo            = "SELECT id, title, author, price, stock FROM books WHERE id = ?"
 	QueryInsertBook             = "INSERT INTO books (title, author, price, stock) VALUES (?, ?, ?, ?)"
 	QueryUpdateBookInfo         = "UPDATE books SET title = ?, author = ?, price = ?, stock = ? WHERE id = ?"
+	QueryDeleteBookWithID       = "DELETE FROM books WHERE id = ?"
 )
 
 func GetBooksFromDB(page int, limit int) ([]Book, response.PaginationData, error) {
 	// open connection to db
-	db, err := sql.Open("mysql", "root:Aa@123456@tcp(localhost:3306)/book_management")
+	db, err := openAndCheckConnectDb()
 	if err != nil {
-		log.Fatal("open db failed")
-		return nil, response.PaginationData{}, errors.New("open db failed")
+		return nil, response.PaginationData{}, err
 	}
 	defer db.Close()
-
-	// Check connection before query
-	if err := db.Ping(); err != nil {
-		log.Fatal("keep connection to db failed")
-		return nil, response.PaginationData{}, errors.New("keep connection to db failed")
-	}
 
 	// Calculate offset
 	offset := max(page*limit, 0)
@@ -80,16 +79,11 @@ func GetBooksFromDB(page int, limit int) ([]Book, response.PaginationData, error
 
 func GetBookInfoFromDB(id int) (Book, error) {
 	// open connection to db
-	db, err := sql.Open("mysql", "root:Aa@123456@tcp(localhost:3306)/book_management")
+	db, err := openAndCheckConnectDb()
 	if err != nil {
-		return Book{}, errors.New("open db failed")
+		return Book{}, err
 	}
 	defer db.Close()
-
-	// Check connection before query
-	if err := db.Ping(); err != nil {
-		return Book{}, errors.New("keep connection to db failed")
-	}
 
 	// Query get Book Info
 	var book Book
@@ -103,17 +97,11 @@ func GetBookInfoFromDB(id int) (Book, error) {
 }
 
 func InsertBookToDB(book Book) error {
-	// open connection to db
-	db, err := sql.Open("mysql", "root:Aa@123456@tcp(localhost:3306)/book_management")
+	db, err := openAndCheckConnectDb()
 	if err != nil {
-		return errors.New("open db failed")
+		return err
 	}
 	defer db.Close()
-
-	// Check connection before query
-	if err := db.Ping(); err != nil {
-		return errors.New("keep connection to db failed")
-	}
 
 	// Query get Book Info
 	result, err := db.Exec(QueryInsertBook, book.Title, book.Author, book.Price, book.Stock)
@@ -129,17 +117,11 @@ func InsertBookToDB(book Book) error {
 }
 
 func UpdateBookInfoToDB(book Book, id int) error {
-	// open connection to db
-	db, err := sql.Open("mysql", "root:Aa@123456@tcp(localhost:3306)/book_management")
+	db, err := openAndCheckConnectDb()
 	if err != nil {
-		return errors.New("open db failed")
+		return err
 	}
 	defer db.Close()
-
-	// Check connection before query
-	if err := db.Ping(); err != nil {
-		return errors.New("keep connection to db failed")
-	}
 
 	//Query update book
 	result, err := db.Exec(QueryUpdateBookInfo, book.Title, book.Author, book.Price, book.Stock, id)
@@ -149,4 +131,34 @@ func UpdateBookInfoToDB(book Book, id int) error {
 		return errors.New("query items from db failed")
 	}
 	return nil
+}
+
+func DeleteBookFromDB(id int) error {
+	db, err := openAndCheckConnectDb()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	// Query delete book
+	result, err := db.Exec(QueryDeleteBookWithID, id)
+	if err != nil || result == nil {
+		log.Fatal("query items from db failed ", err)
+		return errors.New("query items from db failed")
+	}
+	return nil
+}
+
+func openAndCheckConnectDb() (*sql.DB, error) {
+	// open connection to db
+	db, err := sql.Open(mySqlDbType, openSqlDbScript)
+	if err != nil {
+		return nil, errors.New("open db failed")
+	}
+
+	// Check connection before query
+	if err := db.Ping(); err != nil {
+		return nil, errors.New("keep connection to db failed")
+	}
+	return db, nil
 }

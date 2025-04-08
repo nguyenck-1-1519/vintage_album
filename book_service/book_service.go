@@ -1,25 +1,13 @@
 package book_service
 
 import (
-	"errors"
 	"net/http"
-	"slices"
 	"strconv"
 
 	response "example.com/base_response"
 	messages "example.com/messages"
 	"github.com/gin-gonic/gin"
 )
-
-var Books = []Book{
-	{ID: 1, Title: "A", Author: "X", Price: 1},
-	{ID: 2, Title: "B", Author: "X", Price: 20},
-	{ID: 3, Title: "B", Author: "X", Price: 300},
-	{ID: 4, Title: "B", Author: "X", Price: 4000},
-	{ID: 5, Title: "B", Author: "X", Price: 50000},
-	{ID: 6, Title: "B", Author: "Y", Price: 600000},
-	{ID: 7, Title: "B", Author: "Y", Price: 7000000, Stock: 1},
-}
 
 /*
 [GET] /books?page=<int>&limit=<int>
@@ -176,15 +164,6 @@ func UpdateBookInfoWithID(c *gin.Context) {
 	})
 }
 
-func getBookWithID(id int) (*Book, int, error) {
-	for i, book := range Books {
-		if book.ID == id {
-			return &Books[i], i, nil
-		}
-	}
-	return nil, -1, errors.New("not found book")
-}
-
 /*
 [DELETE] /books/:id
 Handle request DELETE a book with ID
@@ -203,17 +182,12 @@ func DeleteABookWithID(c *gin.Context) {
 		return
 	}
 
-	_, i, err := getBookWithID(id)
-	if err != nil || i < 0 {
-		c.IndentedJSON(http.StatusNotFound, response.BaseResponse{
-			Status:  response.StatusError,
-			Message: messages.ResultNotFound,
-			Error:   &err,
-		})
+	err = DeleteBookFromDB(id)
+	if err != nil {
+		throwBadRequestWithError(&err, c, "")
 		return
 	}
 
-	Books = slices.Delete(Books, i, i+1)
 	c.IndentedJSON(http.StatusOK, response.BaseResponse{
 		Status:  response.StatusOK,
 		Message: messages.OK,
