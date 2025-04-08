@@ -1,17 +1,13 @@
-module example/vintage-album
+module example.com/my_authentication
 
 go 1.24.1
 
 require (
-	example.com/book_service v0.0.0-00010101000000-000000000000
-	example.com/my_authentication v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.10.0
+	github.com/golang-jwt/jwt/v5 v5.2.2
 )
 
 require (
-	example.com/base_response v0.0.0-00010101000000-000000000000 // indirect
-	example.com/messages v0.0.0-00010101000000-000000000000 // indirect
-	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
@@ -21,9 +17,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
-	github.com/go-sql-driver/mysql v1.9.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -41,11 +35,3 @@ require (
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace example.com/book_service => ./book_service
-
-replace example.com/messages => ./messages
-
-replace example.com/base_response => ./base_response
-
-replace example.com/my_authentication => ./my_authentication
